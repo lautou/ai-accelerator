@@ -6,6 +6,14 @@ namespace: openshift-gitops
 resources:
   - ../../../components/argocd/apps/overlays/rhoai-stable-2.22
   - ../../base
+
+# Git repository configuration (single source of truth)
+configMapGenerator:
+  - name: gitops-repo-config
+    literals:
+      - repoURL=https://github.com/lautou/ai-accelerator.git
+      - targetRevision=main
+
 # patches:
 #   Uncomment patches to disable automatic sync
 #   - path: patch-applicationset-manual-sync.yaml
@@ -20,20 +28,30 @@ resources:
 #       version: v1alpha1
 
 replacements:
-  # copy the repo from the application to the applicationsets
+  # Inject git repository URL from ConfigMap to all Applications and ApplicationSets
   - source:
-      kind: Application
-      fieldPath: spec.source.repoURL
+      kind: ConfigMap
+      name: gitops-repo-config
+      fieldPath: data.repoURL
     targets:
+      - select:
+          kind: Application
+        fieldPaths:
+          - spec.source.repoURL
       - select:
           kind: ApplicationSet
         fieldPaths:
           - spec.template.spec.source.repoURL
-  # copy the branch from the application to the applicationsets
+  # Inject git branch/revision from ConfigMap to all Applications and ApplicationSets
   - source:
-      kind: Application
-      fieldPath: spec.source.targetRevision
+      kind: ConfigMap
+      name: gitops-repo-config
+      fieldPath: data.targetRevision
     targets:
+      - select:
+          kind: Application
+        fieldPaths:
+          - spec.source.targetRevision
       - select:
           kind: ApplicationSet
         fieldPaths:
