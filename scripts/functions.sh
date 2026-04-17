@@ -306,7 +306,7 @@ update_configmap_repo(){
   echo "Updating ${KUSTOMIZATION_FILE}..."
 
   # Update the repoURL literal in the configMapGenerator
-  yq -i '(.configMapGenerator[] | select(.name == "gitops-repo-config") | .literals[] | select(. | startswith("repoURL="))) = "repoURL='${REPO_URL}'"' ${KUSTOMIZATION_FILE}
+  yq -i '(.configMapGenerator[] | select(.name == "gitops-repo-config") | .literals[] | select(test("^repoURL="))) = "repoURL='${REPO_URL}'"' ${KUSTOMIZATION_FILE}
 
   GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
@@ -335,7 +335,7 @@ update_configmap_branch(){
   echo "Updating ${KUSTOMIZATION_FILE}..."
 
   # Update the targetRevision literal in the configMapGenerator
-  yq -i '(.configMapGenerator[] | select(.name == "gitops-repo-config") | .literals[] | select(. | startswith("targetRevision="))) = "targetRevision='${BRANCH}'"' ${KUSTOMIZATION_FILE}
+  yq -i '(.configMapGenerator[] | select(.name == "gitops-repo-config") | .literals[] | select(test("^targetRevision="))) = "targetRevision='${BRANCH}'"' ${KUSTOMIZATION_FILE}
 
   git add ${KUSTOMIZATION_FILE}
   git commit -m "Update branch to ${BRANCH} (automatic update by bootstrap script)"
